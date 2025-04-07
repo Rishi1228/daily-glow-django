@@ -1,7 +1,8 @@
 
 import React from 'react';
 import { Button } from '@/components/ui/button';
-import { Sun, Moon, BookOpen } from 'lucide-react';
+import { Sun, Moon, BookOpen, LogIn } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const Header = () => {
   return (
@@ -16,9 +17,12 @@ const Header = () => {
           <Button variant="ghost" size="icon">
             <Sun className="h-5 w-5" />
           </Button>
-          <Button variant="outline" className="bg-bright-50 text-bright-700 border-bright-200 hover:bg-bright-100">
-            Sign In
-          </Button>
+          <Link to="/auth">
+            <Button variant="outline" className="bg-bright-50 text-bright-700 border-bright-200 hover:bg-bright-100">
+              <LogIn className="h-4 w-4 mr-2" />
+              Sign In
+            </Button>
+          </Link>
         </div>
       </div>
     </header>

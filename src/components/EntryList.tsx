@@ -2,33 +2,101 @@
 import React, { useState, useEffect } from 'react';
 import EntryCard from './EntryCard';
 import { Clock } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 interface Entry {
   id: string;
   title: string;
   content: string;
   date: string;
+  feedback?: string;
 }
 
 const EntryList = () => {
+  const { toast } = useToast();
   const [entries, setEntries] = useState<Entry[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load entries from localStorage
-    const storedEntries = localStorage.getItem('entries');
+    const fetchEntries = async () => {
+      try {
+        // Get the auth token from localStorage
+        const token = localStorage.getItem('dailyBrightToken');
+        
+        if (!token) {
+          setEntries([]);
+          setIsLoading(false);
+          return;
+        }
+        
+        // In a real implementation, this would connect to a Django backend endpoint
+        const response = await fetch('http://localhost:8000/api/entries', {
+          headers: {
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+        
+        if (!response.ok) {
+          throw new Error('Failed to fetch entries');
+        }
+        
+        const data = await response.json();
+        setEntries(data);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Error",
+          description: error instanceof Error ? error.message : "Could not load your reflections",
+        });
+        setEntries([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    if (storedEntries) {
-      setEntries(JSON.parse(storedEntries));
-    }
-    
-    setIsLoading(false);
-  }, []);
+    fetchEntries();
+  }, [toast]);
 
-  const handleDelete = (id: string) => {
-    const updatedEntries = entries.filter(entry => entry.id !== id);
-    setEntries(updatedEntries);
-    localStorage.setItem('entries', JSON.stringify(updatedEntries));
+  const handleDelete = async (id: string) => {
+    try {
+      // Get the auth token from localStorage
+      const token = localStorage.getItem('dailyBrightToken');
+      
+      if (!token) {
+        toast({
+          variant: "destructive",
+          title: "Authentication Required",
+          description: "Please sign in to delete entries.",
+        });
+        return;
+      }
+      
+      // In a real implementation, this would connect to a Django backend endpoint
+      const response = await fetch(`http://localhost:8000/api/entries/${id}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to delete entry');
+      }
+      
+      const updatedEntries = entries.filter(entry => entry.id !== id);
+      setEntries(updatedEntries);
+      
+      toast({
+        title: "Entry Deleted",
+        description: "Your reflection has been deleted successfully.",
+      });
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to delete entry",
+      });
+    }
   };
 
   if (isLoading) {
@@ -70,6 +138,7 @@ const EntryList = () => {
             title={entry.title}
             content={entry.content}
             date={entry.date}
+            feedback={entry.feedback}
             onDelete={handleDelete}
           />
         ))}

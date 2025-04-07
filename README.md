@@ -1,73 +1,82 @@
-# Welcome to your Lovable project
 
-## Project info
+# Daily Bright - Reflective Learning Assistant
 
-**URL**: https://lovable.dev/projects/3a58b51f-892c-432b-851a-4c0aba1e15c9
+Daily Bright is a web application that helps users track their daily learnings and receive AI-powered insights to enhance their personal growth journey.
 
-## How can I edit this code?
+## Features
 
-There are several ways of editing your application.
+- User authentication (signup/signin)
+- Daily reflection entries with title and content
+- AI-generated feedback on reflections
+- View and manage past reflections
+- Responsive design
 
-**Use Lovable**
+## Project Structure
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/3a58b51f-892c-432b-851a-4c0aba1e15c9) and start prompting.
+This project consists of:
 
-Changes made via Lovable will be committed automatically to this repo.
+1. **Frontend**: React-based UI with HTML/CSS (in the `src` directory)
+2. **Backend**: Django REST API with authentication and data storage (in the `backend` directory)
 
-**Use your preferred IDE**
+## Setup and Installation
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+### Backend Setup
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+1. Navigate to the backend directory:
+   ```
+   cd backend
+   ```
 
-Follow these steps:
+2. Create and activate a virtual environment:
+   ```
+   python -m venv venv
+   source venv/bin/activate  # On Windows: venv\Scripts\activate
+   ```
 
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
+3. Install dependencies:
+   ```
+   pip install -r requirements.txt
+   ```
 
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
+4. Run migrations:
+   ```
+   python manage.py migrate
+   ```
 
-# Step 3: Install the necessary dependencies.
-npm i
+5. Create a superuser (admin):
+   ```
+   python manage.py createsuperuser
+   ```
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
-```
+6. Run the development server:
+   ```
+   python manage.py runserver
+   ```
 
-**Edit a file directly in GitHub**
+The Django server will run at http://127.0.0.1:8000/
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Frontend Setup
 
-**Use GitHub Codespaces**
+The frontend is already built in the React application. To access it, simply navigate to the main URL when the Django server is running.
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Usage
 
-## What technologies are used for this project?
+1. Register a new account using your email
+2. Sign in to access the dashboard
+3. Create new reflections by filling out the form
+4. View your past reflections and get AI insights on them
 
-This project is built with:
+## API Endpoints
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+- **Authentication**:
+  - `POST /api/auth/signup` - Create a new user account
+  - `POST /api/auth/signin` - Get authentication token
 
-## How can I deploy this project?
+- **Reflections**:
+  - `GET /api/entries` - List all entries for the authenticated user
+  - `POST /api/entries` - Create a new entry
+  - `GET /api/entries/{id}` - Get a specific entry
+  - `DELETE /api/entries/{id}` - Delete an entry
 
-Simply open [Lovable](https://lovable.dev/projects/3a58b51f-892c-432b-851a-4c0aba1e15c9) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes it is!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+- **AI Feedback**:
+  - `POST /api/feedback` - Generate AI feedback for reflection content

@@ -2,29 +2,70 @@
 import React, { useState } from 'react';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Calendar, MessageSquare, X } from 'lucide-react';
+import { Calendar, MessageSquare, Sparkles, X } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 interface EntryCardProps {
   id: string;
   title: string;
   content: string;
   date: string;
+  feedback?: string;
   onDelete?: (id: string) => void;
 }
 
-const EntryCard = ({ id, title, content, date, onDelete }: EntryCardProps) => {
+const EntryCard = ({ id, title, content, date, feedback, onDelete }: EntryCardProps) => {
+  const { toast } = useToast();
   const [isExpanded, setIsExpanded] = useState(false);
+  const [isGeneratingFeedback, setIsGeneratingFeedback] = useState(false);
+  const [aiFeedback, setAiFeedback] = useState(feedback || '');
+  
   const formattedDate = new Date(date).toLocaleDateString('en-US', {
     month: 'short',
     day: 'numeric',
     year: 'numeric',
   });
 
-  const aiSummary = "This entry shows reflection on key concepts you've learned. Consider connecting these ideas to your previous knowledge for deeper integration.";
-
   const handleDelete = () => {
     if (onDelete) {
       onDelete(id);
+    }
+  };
+  
+  const generateFeedback = async () => {
+    setIsGeneratingFeedback(true);
+    
+    try {
+      // Get the auth token from localStorage
+      const token = localStorage.getItem('dailyBrightToken');
+      
+      // In a real implementation, this would connect to a Django backend endpoint
+      const response = await fetch('http://localhost:8000/api/feedback', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': token ? `Bearer ${token}` : '',
+        },
+        body: JSON.stringify({
+          entryId: id,
+          content,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to generate feedback');
+      }
+      
+      const data = await response.json();
+      setAiFeedback(data.feedback);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to generate AI feedback",
+      });
+    } finally {
+      setIsGeneratingFeedback(false);
     }
   };
 
@@ -49,29 +90,42 @@ const EntryCard = ({ id, title, content, date, onDelete }: EntryCardProps) => {
       </CardHeader>
       
       <CardContent>
-        <p className="text-gray-600 line-clamp-3">
+        <p className={`text-gray-600 ${!isExpanded && 'line-clamp-3'}`}>
           {content}
         </p>
-        {isExpanded && (
+        {isExpanded && aiFeedback && (
           <div className="mt-4 p-3 bg-bright-50 rounded-md border border-bright-100">
             <div className="flex items-center gap-2 text-sm font-medium text-bright-700 mb-2">
-              <MessageSquare className="h-4 w-4" />
+              <Sparkles className="h-4 w-4" />
               <span>AI Insight</span>
             </div>
-            <p className="text-sm text-gray-600">{aiSummary}</p>
+            <p className="text-sm text-gray-600">{aiFeedback}</p>
           </div>
         )}
       </CardContent>
       
-      <CardFooter>
+      <CardFooter className="flex justify-between">
         <Button 
           variant="ghost" 
           size="sm" 
-          className="text-bright-600 hover:text-bright-700 hover:bg-bright-50 w-full"
+          className="text-bright-600 hover:text-bright-700 hover:bg-bright-50"
           onClick={() => setIsExpanded(!isExpanded)}
         >
           {isExpanded ? 'Show Less' : 'Show More'}
         </Button>
+        
+        {isExpanded && !aiFeedback && (
+          <Button
+            variant="outline"
+            size="sm"
+            className="border-bright-200 text-bright-600 hover:bg-bright-50"
+            onClick={generateFeedback}
+            disabled={isGeneratingFeedback}
+          >
+            <Sparkles className="h-4 w-4 mr-1" />
+            {isGeneratingFeedback ? 'Generating...' : 'Get AI Feedback'}
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
