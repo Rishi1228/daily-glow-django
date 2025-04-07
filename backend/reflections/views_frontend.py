@@ -20,6 +20,27 @@ def index_view(request):
         'reflections': reflections,
     })
 
+@login_required
+def timeline_view(request):
+    """View for the timeline history of reflections."""
+    # Get all reflections for the current user, ordered by date created
+    reflections = Reflection.objects.filter(user=request.user).order_by('date_created')
+    
+    # Group reflections by month and year
+    timeline_data = {}
+    for reflection in reflections:
+        # Format as "Month Year" (e.g., "April 2025")
+        month_year = reflection.date_created.strftime("%B %Y")
+        if month_year not in timeline_data:
+            timeline_data[month_year] = []
+        
+        timeline_data[month_year].append(reflection)
+    
+    return render(request, 'timeline.html', {
+        'timeline_data': timeline_data,
+        'reflections_count': reflections.count(),
+    })
+
 def login_view(request):
     """View for handling user login."""
     if request.user.is_authenticated:
@@ -111,3 +132,4 @@ def delete_reflection(request, reflection_id):
         messages.success(request, "Reflection deleted successfully!")
     
     return redirect('index')
+
