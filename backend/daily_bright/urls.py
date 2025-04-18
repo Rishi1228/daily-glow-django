@@ -6,7 +6,7 @@ from django.contrib import admin
 from django.urls import path, include
 from reflections.views_frontend import (
     index_view, login_view, register_view, logout_view, 
-    add_reflection, delete_reflection, timeline_view
+    add_reflection, delete_reflection, timeline_view, dashboard_view
 )
 
 urlpatterns = [
@@ -22,6 +22,7 @@ urlpatterns = [
     path('register/', register_view, name='register'),
     path('logout/', logout_view, name='logout'),
     path('timeline/', timeline_view, name='timeline'),
+    path('dashboard/', dashboard_view, name='dashboard'),
     path('reflection/add/', add_reflection, name='add_reflection'),
     path('reflection/<int:reflection_id>/delete/', delete_reflection, name='delete_reflection'),
 ]

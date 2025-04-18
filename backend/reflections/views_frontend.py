@@ -1,4 +1,3 @@
-
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
@@ -18,6 +17,22 @@ def index_view(request):
     return render(request, 'index.html', {
         'today_date': today_date,
         'reflections': reflections,
+    })
+
+@login_required
+def dashboard_view(request):
+    """View for the user dashboard."""
+    # Count total reflections for the user
+    reflection_count = Reflection.objects.filter(user=request.user).count()
+    
+    # Get the most recent reflections
+    recent_reflections = Reflection.objects.filter(
+        user=request.user
+    ).order_by('-date_created')[:5]
+    
+    return render(request, 'dashboard.html', {
+        'reflection_count': reflection_count,
+        'recent_reflections': recent_reflections,
     })
 
 @login_required
@@ -132,4 +147,3 @@ def delete_reflection(request, reflection_id):
         messages.success(request, "Reflection deleted successfully!")
     
     return redirect('index')
-
